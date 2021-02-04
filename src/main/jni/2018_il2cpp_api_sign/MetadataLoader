@@ -1,0 +1,69 @@
+#include "il2cpp-config.h"
+#include "MetadataLoader.h"
+#include "os/File.h"
+#include "os/Mutex.h"
+#include "utils/MemoryMappedFile.h"
+#include "utils/PathUtils.h"
+#include "utils/Runtime.h"
+#ifdef ANDROID
+#include <android/log.h>
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "YY" ,__VA_ARGS__)
+#else
+#define LOGD(...)
+#endif
+
+using namespace il2cpp::os;
+using namespace il2cpp::vm;
+const char* g_updated_meta_filename = NULL;
+#if defined(__cplusplus)
+extern "C"
+{
+#endif // __cplusplus
+IL2CPP_EXPORT void il2cpp_set_update_meta_filename(const char* filename)
+{	
+	LOGD("set updated_meta_filename:%s", filename);
+	g_updated_meta_filename = filename;
+}
+#if defined(__cplusplus)
+}
+#endif // __cplusplus
+void* MetadataLoader::LoadMetadataFile(const char* fileName)
+{	
+    std::string resourcesDirectory = utils::PathUtils::Combine(utils::Runtime::GetDataDir(), utils::StringView<char>("Metadata"));
+    std::string resourceFilePath = utils::PathUtils::Combine(resourcesDirectory, utils::StringView<char>(fileName, strlen(fileName)));	
+    int error = 1;
+    FileHandle* handle = NULL;
+	if (g_updated_meta_filename != NULL)
+	{
+		LOGD("load g_updated_meta_filename:%s", g_updated_meta_filename);
+		handle = File::Open(g_updated_meta_filename, kFileModeOpen, kFileAccessRead, kFileShareRead, kFileOptionsNone, &error);	
+		if (error != 0)
+		{
+			LOGD("load g_updated_meta_filename failed, try local metafile:%s", g_updated_meta_filename);
+		}
+		else
+		{
+			LOGD("load g_updated_meta_filename success:%s", g_updated_meta_filename);
+		}
+	}
+	if (error != 0)
+	{		
+		handle = File::Open(resourceFilePath, kFileModeOpen, kFileAccessRead, kFileShareRead, kFileOptionsNone, &error);
+		if (error != 0)
+		{
+			LOGD("LoadMetadataFile file:%s", resourceFilePath.c_str());
+			return NULL;
+		}
+	}
+    void* fileBuffer = utils::MemoryMappedFile::Map(handle);
+
+    File::Close(handle, &error);
+    if (error != 0)
+    {
+        utils::MemoryMappedFile::Unmap(fileBuffer);
+        fileBuffer = NULL;
+        return NULL;
+    }
+
+    return fileBuffer;
+}
