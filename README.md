@@ -10,4 +10,6 @@
 加载global-metadata.data是通过函数void* MetadataLoader::LoadMetadataFile(const char* fileName)，
  通过修改修改引擎下的MetadataLoader.cpp，实现读取自定义路径的global-metadata.data达到热更目的。
  
- 
+ ## 工程说明
+ 工程是适配的unity 2018.4，如果需要适配其他版本的unity，请参考il2cpp-api.cpp il2cpp-api.h il2cpp-api-functions.h
+ 定义该版本的支持函数
