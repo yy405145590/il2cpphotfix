@@ -1,5 +1,5 @@
 # il2cpphotfix
-一款用于热更unity libil2cpp.so动态库的工具
+一款用于热更unity libil2cpp.so动态库的工具,比起其他通过hook方式实现的优点在于无任何兼容性问题。
 
 ## 原理
 ### libil2cpp.so动态库热更
